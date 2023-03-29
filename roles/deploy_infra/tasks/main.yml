@@ -50,7 +50,7 @@
     name: "web-instances"  
     vpc_subnet_id: "{{subnet.subnet.id}}"
     instance_type: t2.micro
-    count: 2
+    exact_count: 2
     security_group: "{{sg.group_id}}"
     network:
       assign_public_ip: true
