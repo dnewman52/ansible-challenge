@@ -5,3 +5,56 @@
   amazon.aws.ec2_vpc_net:
     name: AdventOne-VPC
     cidr_block: 10.10.0.0/16
+  register: vpc
+
+
+- name: Create subnet 1 for database servers
+  amazon.aws.ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{vpc.vpc.id}}"
+    cidr: 10.10.0.16/28
+    tags:
+      Name: Subnet 1
+  register: subnet
+
+- name: example using security group rule descriptions
+  amazon.aws.ec2_security_group:
+    name: "allow-all-http-sg"
+    description: sg with rule descriptions
+    vpc_id: "{{vpc.vpc.id}}"        
+    rules:
+      - proto: tcp
+        ports:
+        - 80
+        cidr_ip: 0.0.0.0/0
+        rule_desc: allow all on port 80
+  register: sg
+
+- name: gather information about all AMI
+  amazon.aws.ec2_ami_info:
+    filters:
+          name: amzn2-ami-hvm-*-x86_64-gp2
+          architecture: x86_64
+          block-device-mapping.volume-type: gp2
+          virtualization-type: hvm
+    owners: amazon
+  register: amis
+
+- name: Get ami result
+  set_fact: 
+    ami_id: "{{amis.images[-1].image_id}}"
+
+
+- name: start an instance with a public IP address
+  amazon.aws.ec2_instance:
+    name: "web-instances"  
+    vpc_subnet_id: "{{subnet.subnet.id}}"
+    instance_type: t2.micro
+    count: 2
+    security_group: "{{sg.group_id}}"
+    network:
+      assign_public_ip: true
+    image_id: "{{ami_id}}"
+    tags:
+      Environment: Testing
+  
