@@ -1,1 +1,10 @@
 ---
+- hosts: localhost
+  roles:
+    - deploy_infra
+    # - configure_vm
+    # - deploy_site
+  
+  # tasks:
+  # - name: Print Hello World
+  #   debug:

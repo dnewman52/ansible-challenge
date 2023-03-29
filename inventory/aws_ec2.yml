@@ -1,0 +1,9 @@
+plugin: amazon.aws.aws_ec2
+
+# The access key for your AWS account.
+aws_access_key: "{{AWS_ACCESS_KEY}}"
+# The secret access key for your AWS account.
+aws_secret_key: "{{AWS_SECRET_KEY}}"
+aws_profile: default
+regions:
+  - ap-southeast-2
