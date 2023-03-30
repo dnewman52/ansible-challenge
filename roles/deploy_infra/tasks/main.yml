@@ -7,6 +7,13 @@
     cidr_block: 10.10.0.0/16
   register: vpc
 
+- name: Create Internet gateway
+  amazon.aws.ec2_vpc_igw:
+    vpc_id: "{{vpc.vpc.id}}"
+    state: present
+    tags:
+        name: igw
+  register: igw
 
 - name: Create subnet 1 for database servers
   amazon.aws.ec2_vpc_subnet:
@@ -17,9 +24,25 @@
       Name: Subnet 1
   register: subnet
 
+- name: Set up public subnet route table
+  amazon.aws.ec2_vpc_route_table:
+    vpc_id: "{{vpc.vpc.id}}"
+    tags:
+      Name: Public
+    subnets:
+      - "{{ subnet.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
+      - dest: ::/0
+        gateway_id: "{{ igw.gateway_id }}"
+  register: public_route_table
+
+
+
 - name: example using security group rule descriptions
   amazon.aws.ec2_security_group:
-    name: "allow-all-http-sg"
+    name: "allow-webserver-access-sg"
     description: sg with rule descriptions
     vpc_id: "{{vpc.vpc.id}}"        
     rules:
@@ -28,6 +51,11 @@
         - 80
         cidr_ip: 0.0.0.0/0
         rule_desc: allow all on port 80
+      - proto: tcp
+        ports:
+        - 22
+        cidr_ip: 0.0.0.0/0
+        rule_desc: allow all on port 22
   register: sg
 
 - name: gather information about all AMI
@@ -40,21 +68,51 @@
     owners: amazon
   register: amis
 
-- name: Get ami result
+- name: Get latest ami result
   set_fact: 
     ami_id: "{{amis.images[-1].image_id}}"
 
+- name: create a new EC2 key pair, returns generated private key
+  amazon.aws.ec2_key:
+    name: webserver-keypair
+  register: keypair
+  notify: "Write keypair to file"
 
-- name: start an instance with a public IP address
+- name: start 2 instances with a public IP addresses
   amazon.aws.ec2_instance:
     name: "web-instances"  
     vpc_subnet_id: "{{subnet.subnet.id}}"
     instance_type: t2.micro
     exact_count: 2
     security_group: "{{sg.group_id}}"
+    key_name: "webserver-keypair"
     network:
       assign_public_ip: true
     image_id: "{{ami_id}}"
     tags:
       Environment: Testing
-  
+  register: instances_result
+
+- name: Set ec2 instances
+  set_fact: 
+    instance_ids: "{{instances}}"
+  vars: 
+    instances: "{{ instances_result.instance_ids }}"
+
+- name: Gather information about a particular instance using ID
+  amazon.aws.ec2_instance_info:
+    instance_ids: "{{ instances_result.instance_ids }}"
+  register: instances
+  until: instances.instances | selectattr("public_dns_name", ">", "0") | list | length > 0
+  retries: 10
+  delay: 10
+
+- name: Set ec2 instance dns names
+  set_fact: 
+    instance_dns_names: "{{instance_dns_names}}"
+  vars: 
+    instance_dns_names: "{{instances.instances | map(attribute='public_dns_name') | list}}"
+
+    
+
+

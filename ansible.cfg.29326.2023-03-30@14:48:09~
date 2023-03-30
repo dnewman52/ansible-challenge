@@ -1,5 +1,4 @@
 [defaults]
-private_key_file="/aws/keypair.pem"
 VAULT_PASSWORD_FILE = ./pwdfile
 inventory = inventory/aws_ec2.yml
 [inventory]

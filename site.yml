@@ -1,8 +1,14 @@
 ---
 - hosts: localhost
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      region: '{{ region }}'
+
   roles:
     - deploy_infra
-    # - configure_vm
+    - configure_vm
     # - deploy_site
   
   # tasks:
