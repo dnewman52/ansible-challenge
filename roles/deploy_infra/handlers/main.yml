@@ -16,6 +16,8 @@
     backup: yes
     insertafter: "\\[defaults]"
     state: present
-    line: private_key_file='/aws/keypair.pem'
+    line: 
+      - private_key_file='/aws/keypair.pem'
+      - remote_user='ec2-user'
     path: "{{playbook_dir ~ '/ansible.cfg'}}"
   listen: "Write keypair to file"
