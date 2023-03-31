@@ -23,5 +23,5 @@
     path: "{{ playbook_dir ~ '/ansible.cfg' }}"
   loop:
     - private_key_file="/aws/keypair.pem"
-    # - remote_user="ec2-user" # Unsure if this is still needed
+    - remote_user="ec2-user"
   listen: "Write keypair to file"

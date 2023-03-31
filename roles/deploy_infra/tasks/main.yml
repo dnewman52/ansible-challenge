@@ -88,6 +88,7 @@
     detailed_monitoring: true
     network:
       assign_public_ip: true
+      delete_on_termination: true
     image_id: "{{ ami_id }}"
     wait: true
     tags:

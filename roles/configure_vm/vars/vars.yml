@@ -7,7 +7,12 @@ packages:
   - mod_fcgid
   - mod_ssl
   - perl-Newt
+  - chrony
 
-pip:
-  - boto3
-  - psycopg2-binary
+unnecessary_services:
+  - postfix
+  - telnet
+unnecessary_software:
+  - tcpdump
+  - nmap-ncat
+  - wpa_supplicant

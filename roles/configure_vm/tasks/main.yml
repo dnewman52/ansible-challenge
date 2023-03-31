@@ -1,6 +1,13 @@
 - name: Get packages
   include_vars: "../vars/vars.yml"
 
+- name: Update packages to latest
+  package:
+    name: "*"
+    state: latest
+  tags:
+    - skip_ansible_lint
+
 - name: Enable EPEL repo on AL2
   command: "{{ item }}"
   loop:
@@ -8,7 +15,34 @@
     - yum clean metadata
   become: true
   register: output
-  changed_when: "output.stderr | length == 0"
+  changed_when: "output.stderr | length == 0" # TODO: FIXME
+
+- name: Deploy Hardened SSH server config
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: "0600"
+    backup: true
+    validate: /usr/sbin/sshd -t -f %s
+  become: true
+  notify: "Reload SSH"
+
+- name: Remove problematic packages
+  package:
+    name: "{{ unnecessary_software }}"
+    state: absent
+
+- name: Disable services
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  with_items: "{{ unnecessary_services }}"
+  ignore_errors: true # Used in case service doesn't exist on system
+  tags:
+    - skip_ansible_lint
 
 - name: Install packages
   package:
