@@ -4,11 +4,13 @@
     dest: /var/www/html/index.html
     mode: u+rwx
     backup: true
+  become: true
 
 - name: Start service httpd, if not started
   ansible.builtin.service:
     name: httpd
-    state: started
+    state: restarted
+    enabled: true
   become: true
 
 - name: Confirm that 200 response is returned

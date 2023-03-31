@@ -12,6 +12,12 @@
         name: deploy_infra
     - name: Refresh_inventory
       meta: refresh_inventory
+    - name: Ping the boxes
+      ansible.builtin.ping:
+      register: output
+      until: "'pong' in output.ping"
+      retries: 10
+      delay: 10
 
 - name: Configure newly created infrastructure
   hosts: tag_Name_web_instances
@@ -22,7 +28,7 @@
         name: configure_vm
 
 - name: Deploy template 1 to webserver 1
-  hosts: tag_Name_web_instances
+  hosts: tag_Site_webserver_0
   remote_user: ec2-user
   roles:
     - deploy_site
@@ -30,7 +36,7 @@
     template: avoid-the-bikes.html.j2
 
 - name: Deploy template 2 to webserver 2
-  hosts: tag_Name_web_instances
+  hosts: tag_Site_webserver_1
   remote_user: ec2-user
   roles:
     - deploy_site
