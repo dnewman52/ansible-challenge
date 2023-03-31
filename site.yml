@@ -13,9 +13,9 @@
     - name: Refresh_inventory
       meta: refresh_inventory
 
-- name: Configure newly created infrastructure
+- name: Prewarm SSH on EC2 instances
   hosts: tag_Name_web_instances
-  remote_user: ec2-user
+  gather_facts: false
   tasks:
     - name: Ping the boxes
       ansible.builtin.ping:
@@ -24,6 +24,10 @@
       retries: 10
       delay: 10
 
+- name: Configure newly created infrastructure
+  hosts: tag_Name_web_instances
+  remote_user: ec2-user
+  tasks:
     - name: Run configure_vm role
       include_role:
         name: configure_vm
