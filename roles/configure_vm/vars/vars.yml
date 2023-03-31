@@ -1,5 +1,4 @@
 packages:
-  - epel-release
   - httpd
   - httpd-tools
   - httpd-manual

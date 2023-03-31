@@ -6,17 +6,16 @@
     name: "*"
     state: latest
   tags:
-    - skip_ansible_lint
+    - skip_ansible_lint # Doesn't like state: latest
   become: true
 
-- name: Enable EPEL repo on AL2
+- name: Install EPEL repo on AL2
   command: "{{ item }}"
   loop:
-    - amazon-linux-extras enable epel
-    - yum clean metadata
+    - amazon-linux-extras install epel
   become: true
   register: output
-  changed_when: "output.stderr | length == 0" # TODO: FIXME
+  changed_when: "'Nothing to do' not in output.stdout"
 
 - name: Deploy Hardened SSH server config
   template:
@@ -48,7 +47,7 @@
   ignore_errors: true # Used in case service doesn't exist on system
   become: true
   tags:
-    - skip_ansible_lint
+    - skip_ansible_lint # Doesn't like ignore_errors
 
 - name: Install packages
   package:
