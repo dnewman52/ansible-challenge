@@ -7,6 +7,7 @@
     state: latest
   tags:
     - skip_ansible_lint
+  become: true
 
 - name: Enable EPEL repo on AL2
   command: "{{ item }}"
