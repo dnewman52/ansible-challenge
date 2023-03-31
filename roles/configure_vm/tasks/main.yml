@@ -29,10 +29,14 @@
   become: true
   notify: "Reload SSH"
 
+- name: Flush handlers
+  meta: flush_handlers
+
 - name: Remove problematic packages
   package:
     name: "{{ unnecessary_software }}"
     state: absent
+  become: true
 
 - name: Disable services
   service:
@@ -41,6 +45,7 @@
     enabled: false
   with_items: "{{ unnecessary_services }}"
   ignore_errors: true # Used in case service doesn't exist on system
+  become: true
   tags:
     - skip_ansible_lint
 

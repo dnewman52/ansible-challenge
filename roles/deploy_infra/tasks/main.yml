@@ -76,6 +76,9 @@
   register: keypair
   notify: "Write keypair to file"
 
+- name: Flush handlers
+  meta: flush_handlers
+
 - name: start 2 instances with a public IP addresses
   amazon.aws.ec2_instance:
     name: "web-instances"

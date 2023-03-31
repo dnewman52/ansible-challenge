@@ -3,8 +3,6 @@
     path: "{{ playbook_dir ~ '/aws/' }}"
     state: directory
     mode: u+rwx
-  args:
-    creates: "{{ playbook_dir ~ '/aws/' }}"
   listen: "Write keypair to file"
 
 - name: Write keypair value to file
