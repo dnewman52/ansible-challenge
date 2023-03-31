@@ -1,16 +1,24 @@
 ---
-- hosts: localhost
+- name: Provision Infrastructure
+  hosts: localhost
   module_defaults:
     group/aws:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      region: '{{ region }}'
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      region: "{{ region }}"
+  tasks:
+    - name: import deploy_infra role
+      include_role:
+        name: deploy_infra
+    - name: Refresh_inventory
+      meta: refresh_inventory
 
+- name: Configure newly created infrastructure
+  hosts: tag_Name_web_instances
+  remote_user: ec2-user
   roles:
-    - deploy_infra
     - configure_vm
     # - deploy_site
-  
   # tasks:
   # - name: Print Hello World
   #   debug:

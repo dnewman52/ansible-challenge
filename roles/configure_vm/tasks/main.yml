@@ -1,0 +1,29 @@
+- name: Get packages
+  include_vars: "../vars/vars.yml"
+
+- name: Enable EPEL repo on AL2
+  command: "{{ item }}"
+  loop:
+    - amazon-linux-extras enable epel
+    - yum clean metadata
+  become: true
+  register: output
+  changed_when: "output.stderr not defined"
+
+- name: Install packages
+  package:
+    name: "{{ packages }}"
+    state: present
+
+- name: Enable httpd
+  command:
+  loop:
+    - systemctl enable httpd
+    - systemctl start httpd
+  register: output
+  changed_when: "output.stderr not defined"
+
+- name: Confirm that 200 response is returned
+  uri:
+    url: "http://{{ ansible_host }}"
+    status_code: 200

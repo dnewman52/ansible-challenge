@@ -1,23 +1,27 @@
 - name: Create path
-  command: mkdir -p "{{playbook_dir ~ '/aws/'}}"
+  file:
+    path: "{{ playbook_dir ~ '/aws/' }}"
+    state: directory
+    mode: u+rwx
   args:
-    creates: "{{playbook_dir ~ '/aws/'}}"    
+    creates: "{{ playbook_dir ~ '/aws/' }}"
   listen: "Write keypair to file"
 
 - name: Write keypair value to file
-  copy: 
+  copy:
     content: "{{ keypair.key.private_key }}"
-    dest: "{{playbook_dir ~ '/aws/keypair.pem'}}"
+    dest: "{{ playbook_dir ~ '/aws/keypair.pem' }}"
     mode: "400"
   listen: "Write keypair to file"
 
 - name: Update ansible.cfg
   lineinfile:
-    backup: yes
+    backup: true
     insertafter: "\\[defaults]"
     state: present
-    line: 
-      - private_key_file='/aws/keypair.pem'
-      - remote_user='ec2-user'
-    path: "{{playbook_dir ~ '/ansible.cfg'}}"
+    line: "{{ item }}"
+    path: "{{ playbook_dir ~ '/ansible.cfg' }}"
+  loop:
+    - private_key_file="/aws/keypair.pem"
+    # - remote_user="ec2-user" # Unsure if this is still needed
   listen: "Write keypair to file"

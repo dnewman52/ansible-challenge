@@ -1,0 +1,7 @@
+packages:
+  - epel-release
+  - httpd
+
+pip:
+  - boto3
+  - psycopg2-binary

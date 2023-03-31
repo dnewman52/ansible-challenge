@@ -9,16 +9,16 @@
 
 - name: Create Internet gateway
   amazon.aws.ec2_vpc_igw:
-    vpc_id: "{{vpc.vpc.id}}"
+    vpc_id: "{{ vpc.vpc.id }}"
     state: present
     tags:
-        name: igw
+      name: igw
   register: igw
 
 - name: Create subnet 1 for database servers
   amazon.aws.ec2_vpc_subnet:
     state: present
-    vpc_id: "{{vpc.vpc.id}}"
+    vpc_id: "{{ vpc.vpc.id }}"
     cidr: 10.10.0.16/28
     tags:
       Name: Subnet 1
@@ -26,7 +26,7 @@
 
 - name: Set up public subnet route table
   amazon.aws.ec2_vpc_route_table:
-    vpc_id: "{{vpc.vpc.id}}"
+    vpc_id: "{{ vpc.vpc.id }}"
     tags:
       Name: Public
     subnets:
@@ -38,22 +38,20 @@
         gateway_id: "{{ igw.gateway_id }}"
   register: public_route_table
 
-
-
 - name: example using security group rule descriptions
   amazon.aws.ec2_security_group:
     name: "allow-webserver-access-sg"
     description: sg with rule descriptions
-    vpc_id: "{{vpc.vpc.id}}"        
+    vpc_id: "{{ vpc.vpc.id }}"
     rules:
       - proto: tcp
         ports:
-        - 80
+          - 80
         cidr_ip: 0.0.0.0/0
         rule_desc: allow all on port 80
       - proto: tcp
         ports:
-        - 22
+          - 22
         cidr_ip: 0.0.0.0/0
         rule_desc: allow all on port 22
   register: sg
@@ -61,16 +59,16 @@
 - name: gather information about all AMI
   amazon.aws.ec2_ami_info:
     filters:
-          name: amzn2-ami-hvm-*-x86_64-gp2
-          architecture: x86_64
-          block-device-mapping.volume-type: gp2
-          virtualization-type: hvm
+      name: amzn2-ami-hvm-*-x86_64-gp2
+      architecture: x86_64
+      block-device-mapping.volume-type: gp2
+      virtualization-type: hvm
     owners: amazon
   register: amis
 
 - name: Get latest ami result
-  set_fact: 
-    ami_id: "{{amis.images[-1].image_id}}"
+  set_fact:
+    ami_id: "{{ amis.images[-1].image_id }}"
 
 - name: create a new EC2 key pair, returns generated private key
   amazon.aws.ec2_key:
@@ -80,23 +78,23 @@
 
 - name: start 2 instances with a public IP addresses
   amazon.aws.ec2_instance:
-    name: "web-instances"  
-    vpc_subnet_id: "{{subnet.subnet.id}}"
+    name: "web-instances"
+    vpc_subnet_id: "{{ subnet.subnet.id }}"
     instance_type: t2.micro
     exact_count: 2
-    security_group: "{{sg.group_id}}"
+    security_group: "{{ sg.group_id }}"
     key_name: "webserver-keypair"
     network:
       assign_public_ip: true
-    image_id: "{{ami_id}}"
+    image_id: "{{ ami_id }}"
     tags:
       Environment: Testing
   register: instances_result
 
 - name: Set ec2 instances
-  set_fact: 
-    instance_ids: "{{instances}}"
-  vars: 
+  set_fact:
+    instance_ids: "{{ instances }}"
+  vars:
     instances: "{{ instances_result.instance_ids }}"
 
 - name: Gather information about a particular instance using ID
@@ -108,11 +106,7 @@
   delay: 10
 
 - name: Set ec2 instance dns names
-  set_fact: 
-    instance_dns_names: "{{instance_dns_names}}"
-  vars: 
-    instance_dns_names: "{{instances.instances | map(attribute='public_dns_name') | list}}"
-
-    
-
-
+  set_fact:
+    instance_dns_names: "{{ instance_dns_names }}"
+  vars:
+    instance_dns_names: "{{ instances.instances | map(attribute='public_dns_name') | list }}"
