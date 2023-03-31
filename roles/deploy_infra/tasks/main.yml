@@ -81,32 +81,33 @@
     name: "web-instances"
     vpc_subnet_id: "{{ subnet.subnet.id }}"
     instance_type: t2.micro
+    state: "running"
     exact_count: 2
     security_group: "{{ sg.group_id }}"
     key_name: "webserver-keypair"
+    detailed_monitoring: true
     network:
       assign_public_ip: true
     image_id: "{{ ami_id }}"
+    wait: true
     tags:
       Environment: Testing
   register: instances_result
 
-- name: Set ec2 instances
+- name: tag each instance to differentiate them for deployment
+  amazon.aws.ec2_tag:
+    resource: "{{ item }}"
+    state: present
+    tags:
+      Site: "webserver-{{ index }}"
+  loop: "{{ instances_result.instance_ids }}"
+  loop_control:
+    index_var: index
+
+- name: Set relevant ec2 facts
   set_fact:
     instance_ids: "{{ instances }}"
-  vars:
-    instances: "{{ instances_result.instance_ids }}"
-
-- name: Gather information about a particular instance using ID
-  amazon.aws.ec2_instance_info:
-    instance_ids: "{{ instances_result.instance_ids }}"
-  register: instances
-  until: instances.instances | selectattr("public_dns_name", ">", "0") | list | length > 0
-  retries: 10
-  delay: 10
-
-- name: Set ec2 instance dns names
-  set_fact:
     instance_dns_names: "{{ instance_dns_names }}"
   vars:
-    instance_dns_names: "{{ instances.instances | map(attribute='public_dns_name') | list }}"
+    instances: "{{ instances_result.instance_ids }}"
+    instance_dns_names: "{{ instances_result.instances | map(attribute='public_dns_name') | list }}"

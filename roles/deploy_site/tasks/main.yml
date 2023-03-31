@@ -1,0 +1,21 @@
+- name: Template index.html
+  template:
+    src: "{{ template }}"
+    dest: /var/www/html/index.html
+    mode: u+rwx
+    backup: true
+
+- name: Start service httpd, if not started
+  ansible.builtin.service:
+    name: httpd
+    state: started
+  become: true
+
+- name: Confirm that 200 response is returned
+  uri:
+    url: "http://{{ ansible_host }}"
+    status_code: 200
+  register: output
+  until: output.status == 200
+  retries: 10
+  delay: 10

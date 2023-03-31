@@ -1,6 +1,12 @@
 packages:
   - epel-release
   - httpd
+  - httpd-tools
+  - httpd-manual
+  - crypto-utils
+  - mod_fcgid
+  - mod_ssl
+  - perl-Newt
 
 pip:
   - boto3

@@ -16,9 +16,36 @@
 - name: Configure newly created infrastructure
   hosts: tag_Name_web_instances
   remote_user: ec2-user
+  tasks:
+    - name: Run configure_vm role
+      include_role:
+        name: configure_vm
+
+- name: Deploy template 1 to webserver 1
+  hosts: tag_Name_web_instances
+  remote_user: ec2-user
   roles:
-    - configure_vm
-    # - deploy_site
-  # tasks:
-  # - name: Print Hello World
-  #   debug:
+    - deploy_site
+  vars:
+    template: avoid-the-bikes.html.j2
+
+- name: Deploy template 2 to webserver 2
+  hosts: tag_Name_web_instances
+  remote_user: ec2-user
+  roles:
+    - deploy_site
+  vars:
+    template: baby-wants-milk.html.j2
+
+- name: Verify we can hit the newly configured endpoints
+  hosts: localhost
+  tasks:
+    - name: Confirm that 200 response is returned
+      uri:
+        url: "http://{{ item }}"
+        status_code: 200
+      loop: "{{ instance_dns_names }}"
+      register: output
+      until: output.status == 200
+      retries: 10
+      delay: 10

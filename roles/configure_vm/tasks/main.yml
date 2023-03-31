@@ -8,22 +8,10 @@
     - yum clean metadata
   become: true
   register: output
-  changed_when: "output.stderr not defined"
+  changed_when: "output.stderr | length == 0"
 
 - name: Install packages
   package:
     name: "{{ packages }}"
     state: present
-
-- name: Enable httpd
-  command:
-  loop:
-    - systemctl enable httpd
-    - systemctl start httpd
-  register: output
-  changed_when: "output.stderr not defined"
-
-- name: Confirm that 200 response is returned
-  uri:
-    url: "http://{{ ansible_host }}"
-    status_code: 200
+  become: true
