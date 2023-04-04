@@ -1,4 +1,2 @@
 venv/
-inventory/aws_ec2.yml
-host_vars/localhost.yml
 aws/
