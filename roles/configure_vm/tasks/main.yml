@@ -1,4 +1,4 @@
-- name: Get packages
+- name: Get vars
   include_vars: "../vars/vars.yml"
 
 - name: Install pip packages
@@ -63,24 +63,16 @@
 - name: Create private key (RSA, 4096 bits)
   community.crypto.openssl_privatekey:
     path: /etc/pki/tls/certs/certificate.key
-    cipher: auto
-    passphrase: "{{ certificate_passphrase }}"
   become: true
   no_log: True
+
 - name: Create simple self-signed certificate
   community.crypto.x509_certificate:
     path: /etc/pki/tls/certs/certificate.pem
     privatekey_path: /etc/pki/tls/certs/certificate.key
-    privatekey_passphrase: "{{ certificate_passphrase }}"
     provider: selfsigned
   become: true
   no_log: True
-
-- name: Create ssl-passphrase file
-  copy:
-    content: "{{ certificate_passphrase }}"
-    dest: /etc/httpd/conf/passphrase
-    mode: a+x
 
 - name: Template ssl.conf
   template:
@@ -91,6 +83,5 @@
   vars:
     certificate: /etc/pki/tls/certs/certificate.pem
     key: /etc/pki/tls/certs/certificate.key
-    passphrase_path: /etc/httpd/conf/passphrase
-  become: true
   notify: "Restart httpd"
+  become: true
