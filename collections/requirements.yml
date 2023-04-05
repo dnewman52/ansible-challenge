@@ -1,5 +1,5 @@
 collections:
-
-- name: amazon.aws
-  version: ">=1.2.0" # Version range identifiers (default: ``*``)
-  
+  - name: amazon.aws
+    version: ">=1.2.0" # Version range identifiers (default: ``*``)
+  - name: community.crypto
+  - name: community.aws

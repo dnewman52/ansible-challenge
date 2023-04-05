@@ -38,17 +38,22 @@
         gateway_id: "{{ igw.gateway_id }}"
   register: public_route_table
 
-- name: example using security group rule descriptions
+- name: Create security group
   amazon.aws.ec2_security_group:
     name: "allow-webserver-access-sg"
     description: sg with rule descriptions
     vpc_id: "{{ vpc.vpc.id }}"
     rules:
+      # - proto: tcp
+      #   ports:
+      #     - 80
+      #   cidr_ip: 0.0.0.0/0
+      #   rule_desc: allow all on port 80
       - proto: tcp
         ports:
-          - 80
+          - 443
         cidr_ip: 0.0.0.0/0
-        rule_desc: allow all on port 80
+        rule_desc: allow all on port 443
       - proto: tcp
         ports:
           - 22
@@ -75,6 +80,7 @@
     name: webserver-keypair
   register: keypair
   notify: "Write keypair to file"
+  no_log: True
 
 - name: Flush handlers
   meta: flush_handlers
@@ -108,10 +114,21 @@
   loop_control:
     index_var: index
 
+- name: upload ssl certificate passphrase to secrets manager
+  community.aws.secretsmanager_secret:
+    name: "ssl_certificate_passphrase"
+    state: present
+    secret_type: "string"
+    secret: "{{ certificate_passphrase }}"
+    overwrite: false
+  register: ssl_secret
+
 - name: Set relevant ec2 facts
   set_fact:
     instance_ids: "{{ instances }}"
     instance_dns_names: "{{ instance_dns_names }}"
+    ssl_secret_name: "{{ ssl_secret_name }}"
   vars:
     instances: "{{ instances_result.instance_ids }}"
     instance_dns_names: "{{ instances_result.instances | map(attribute='public_dns_name') | list }}"
+    ssl_secret_name: "{{ ssl_secret.secret.name }}"

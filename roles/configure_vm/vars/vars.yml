@@ -7,6 +7,11 @@ packages:
   - mod_ssl
   - perl-Newt
   - chrony
+  - python3
+  - python3-pip
+
+pip:
+  - cryptography
 
 unnecessary_services:
   - postfix
@@ -15,3 +20,5 @@ unnecessary_software:
   - tcpdump
   - nmap-ncat
   - wpa_supplicant
+
+certificate_passphrase: "{{lookup('aws_secret', '{{ ssl_secret_name }}')}}"
