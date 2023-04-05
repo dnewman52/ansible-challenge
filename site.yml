@@ -54,6 +54,7 @@
       uri:
         url: "https://{{ item }}"
         status_code: 200
+        validate_certs: false
       loop: "{{ instance_dns_names }}"
       register: output
       until: output.status == 200
