@@ -64,7 +64,7 @@
   community.crypto.openssl_privatekey:
     path: /etc/pki/tls/certs/certificate.key
   become: true
-  no_log: True
+  no_log: true
 
 - name: Create simple self-signed certificate
   community.crypto.x509_certificate:
@@ -72,7 +72,7 @@
     privatekey_path: /etc/pki/tls/certs/certificate.key
     provider: selfsigned
   become: true
-  no_log: True
+  no_log: true
 
 - name: Template ssl.conf
   template:
